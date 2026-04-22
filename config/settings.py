@@ -135,6 +135,9 @@ EMAIL_GERENCIA = 'gerencia.general@transporteskasu.com.mx'
 APSCHEDULER_DATETIME_FORMAT = 'N j, Y, f:s a'
 APSCHEDULER_RUN_NOW_TIMEOUT = 25
 
+# --- URL base del servidor (usada para generar URLs en los QR) ---
+BASE_URL = config('BASE_URL', default='http://localhost:8000').rstrip('/')
+
 # --- Auth ---
 LOGIN_URL = '/usuarios/login/'
 LOGIN_REDIRECT_URL = '/'

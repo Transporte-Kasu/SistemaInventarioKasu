@@ -51,6 +51,8 @@ services:
         type: SECRET
       - key: FROM_EMAIL
         value: invetario@transporteskasu.com.mx
+      - key: BASE_URL
+        value: https://${APP_DOMAIN}
 
 jobs:
   - name: migrate
