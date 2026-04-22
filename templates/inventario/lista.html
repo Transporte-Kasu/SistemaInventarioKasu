@@ -8,9 +8,21 @@
     <h4 class="mb-0 fw-bold"><i class="bi bi-pc-display me-2"></i>Inventario de equipos</h4>
     <small class="text-muted">{{ total }} equipos registrados · {{ activos }} activos</small>
   </div>
-  <a href="{% url 'inventario:crear' %}" class="btn btn-kasu">
-    <i class="bi bi-plus-lg me-1"></i>Nuevo equipo
-  </a>
+  <div class="d-flex gap-2">
+    <form method="post" action="{% url 'inventario:regenerar_qr_masivo' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary"
+              onclick="return confirm('¿Generar QR para todos los equipos que no lo tienen?')">
+        <i class="bi bi-qr-code me-1"></i>Generar QR faltantes
+      </button>
+    </form>
+    <a href="{% url 'inventario:etiquetas_qr' %}" class="btn btn-outline-secondary" target="_blank">
+      <i class="bi bi-printer me-1"></i>Imprimir etiquetas
+    </a>
+    <a href="{% url 'inventario:crear' %}" class="btn btn-kasu">
+      <i class="bi bi-plus-lg me-1"></i>Nuevo equipo
+    </a>
+  </div>
 </div>
 
 <div class="card shadow-sm mb-3">

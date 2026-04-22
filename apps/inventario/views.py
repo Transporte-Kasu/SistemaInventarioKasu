@@ -139,3 +139,57 @@ def qr_download(request, pk):
         response['Content-Disposition'] = f'attachment; filename="qr_{equipo.numero_serie}.png"'
         return response
     return HttpResponse('QR no disponible', status=404)
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+
+@login_required
+def regenerar_qr_masivo(request):
+    """Genera QR para todos los equipos que no lo tienen todavía. Acepta GET y POST."""
+    sin_qr = Equipo.objects.filter(qr_code='')
+    total = sin_qr.count()
+    generados = 0
+    errores = 0
+    for equipo in sin_qr:
+        try:
+            equipo._generar_qr()
+            equipo.save()
+            generados += 1
+        except Exception:
+            errores += 1
+    if generados:
+        messages.success(request, f'QR generado para {generados} equipo(s).')
+    if errores:
+        messages.error(request, f'No se pudo generar QR para {errores} equipo(s).')
+    if total == 0:
+        messages.info(request, 'Todos los equipos ya tienen QR generado.')
+    return redirect('inventario:lista')
+
+
+@login_required
+def etiquetas_qr(request):
+    ids_raw = request.GET.get('ids', '')
+    if ids_raw:
+        ids = [i for i in ids_raw.split(',') if i.strip().isdigit()]
+        equipos = Equipo.objects.filter(pk__in=ids).order_by('usuario', 'marca')
+    else:
+        equipos = Equipo.objects.exclude(estado=Equipo.Estado.DADO_DE_BAJA).order_by('usuario', 'marca')
+
+    # Pre-encode QR images as base64 so they work sin depender de URLs de media
+    import base64
+    etiquetas = []
+    for eq in equipos:
+        qr_b64 = None
+        if eq.qr_code:
+            try:
+                eq.qr_code.seek(0)
+                qr_b64 = base64.b64encode(eq.qr_code.read()).decode('utf-8')
+            except Exception:
+                pass
+        etiquetas.append({'equipo': eq, 'qr_b64': qr_b64})
+
+    return render(request, 'inventario/etiquetas_qr.html', {
+        'etiquetas': etiquetas,
+        'total': len(etiquetas),
+    })

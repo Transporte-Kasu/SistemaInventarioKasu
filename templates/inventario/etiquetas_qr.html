@@ -1,0 +1,204 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Etiquetas QR — Transportes Kasu</title>
+  <style>
+    /* ── Pantalla ── */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 16px;
+    }
+    .toolbar {
+      background: #e0007c;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .toolbar h1 { font-size: 1rem; margin: 0; }
+    .toolbar .meta { font-size: 0.8rem; opacity: 0.85; }
+    .btn-print {
+      background: #fff;
+      color: #e0007c;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-back {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+    .btn-back:hover { opacity: 1; }
+
+    /* ── Grilla de etiquetas ── */
+    .grilla {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── Etiqueta individual (62mm × 40mm visual en pantalla) ── */
+    .etiqueta {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 90px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .etiqueta .qr-img {
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+    }
+    .etiqueta .qr-placeholder {
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+      background: #f8d7e3;
+      border: 1px dashed #e0007c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #e0007c;
+      text-align: center;
+    }
+    .etiqueta .info {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .etiqueta .org {
+      font-size: 7px;
+      color: #e0007c;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .etiqueta .nombre {
+      font-size: 9.5px;
+      font-weight: bold;
+      color: #111;
+      margin: 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .etiqueta .serie {
+      font-size: 8px;
+      color: #555;
+      font-family: 'Courier New', monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .etiqueta .custodio {
+      font-size: 8px;
+      color: #333;
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .etiqueta .tipo-badge {
+      font-size: 7px;
+      background: #f0f0f0;
+      color: #555;
+      padding: 1px 4px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-top: 3px;
+    }
+
+    /* ── Impresión ── */
+    @media print {
+      @page {
+        size: letter;
+        margin: 10mm 8mm;
+      }
+      body {
+        background: #fff;
+        padding: 0;
+        margin: 0;
+      }
+      .toolbar { display: none; }
+      .grilla {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4mm;
+        max-width: 100%;
+      }
+      .etiqueta {
+        border: 0.5pt solid #999;
+        border-radius: 2px;
+        padding: 3mm 3.5mm;
+        min-height: 0;
+        box-shadow: none;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .etiqueta .qr-img,
+      .etiqueta .qr-placeholder {
+        width: 18mm;
+        height: 18mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div>
+    <h1>Etiquetas QR — Transportes Kasu</h1>
+    <div class="meta">{{ total }} etiqueta{{ total|pluralize:"s" }} listas para imprimir</div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <a href="javascript:history.back()" class="btn-back">← Volver</a>
+    <button class="btn-print" onclick="window.print()">🖨 Imprimir</button>
+  </div>
+</div>
+
+<div class="grilla">
+  {% for item in etiquetas %}
+  <div class="etiqueta">
+    {% if item.qr_b64 %}
+      <img class="qr-img" src="data:image/png;base64,{{ item.qr_b64 }}" alt="QR {{ item.equipo.numero_serie }}">
+    {% else %}
+      <div class="qr-placeholder">Sin QR</div>
+    {% endif %}
+    <div class="info">
+      <div class="org">Transportes Kasu — TI</div>
+      <div class="nombre">{{ item.equipo.marca }} {{ item.equipo.modelo }}</div>
+      <div class="serie">S/N: {{ item.equipo.numero_serie }}</div>
+      <div class="custodio">{{ item.equipo.usuario }}</div>
+      <span class="tipo-badge">{{ item.equipo.get_tipo_display }}</span>
+    </div>
+  </div>
+  {% empty %}
+  <p style="grid-column:1/-1;text-align:center;color:#888;">No hay equipos seleccionados.</p>
+  {% endfor %}
+</div>
+
+</body>
+</html>
