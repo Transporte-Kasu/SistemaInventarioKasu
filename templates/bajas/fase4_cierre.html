@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Fase 4 — Cierre{% endblock %}
+{% block nav_bajas %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-patch-check me-2"></i>Fase 4 — Cierre y acta</h4>
+    <small class="text-muted">PROT-TI-001 §7.3.4 — Baja: <strong>{{ baja.equipo }}</strong></small>
+  </div>
+  <a href="{% url 'bajas:detalle' baja.pk %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Volver
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header fw-semibold bg-success-subtle">
+        <i class="bi bi-4-circle me-2"></i>Actualización de inventario y cierre
+      </div>
+      <div class="card-body">
+        <div class="alert alert-success small">
+          <i class="bi bi-check2-all me-2"></i>
+          Al completar esta fase, el equipo quedará marcado como <strong>Dado de baja</strong> y se generará el acta PDF oficial.
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Testigos</label>
+            <div class="border rounded p-2" style="max-height:180px;overflow-y:auto">
+              {{ form.testigos }}
+            </div>
+            <div class="form-text">Selecciona los usuarios que dan fe del proceso (opcional).</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Observaciones finales</label>
+            {{ form.observaciones }}
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success"
+                    onclick="return confirm('¿Confirmar el cierre definitivo de esta baja? Esta acción marcará el equipo como dado de baja.')">
+              <i class="bi bi-patch-check me-1"></i>Cerrar y generar acta PDF
+            </button>
+            <a href="{% url 'bajas:detalle' baja.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

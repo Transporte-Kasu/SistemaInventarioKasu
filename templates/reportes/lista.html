@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Reportes{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reportes automáticos</h4>
+    <small class="text-muted">PROT-TI-001 §6.2 — Generación manual o automática vía APScheduler</small>
+  </div>
+</div>
+
+<!-- Generación manual -->
+<div class="row g-3 mb-4">
+
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-clipboard-data fs-4" style="color:var(--kasu-pink)"></i>
+          <span class="fw-semibold">Inventario completo</span>
+        </div>
+        <p class="text-muted small mb-3">
+          Lista todos los activos con estado, mantenimientos y métricas generales. Se envía a TI y Gerencia.
+          <br><span class="badge bg-secondary">Automático: semestral (1 ene · 1 jul)</span>
+        </p>
+        <a href="{% url 'reportes:generar' 'completo' %}"
+           class="btn btn-kasu w-100"
+           onclick="return confirm('¿Generar y enviar el reporte de inventario completo?')">
+          <i class="bi bi-send me-1"></i>Generar y enviar ahora
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-exclamation-triangle fs-4 text-danger"></i>
+          <span class="fw-semibold">Alerta de mantenimiento</span>
+        </div>
+        <p class="text-muted small mb-3">
+          Equipos vencidos, sin registro y próximos a vencer. Se envía a TI.
+          <br><span class="badge bg-secondary">Automático: día 1 de cada mes · diario 8:30 am</span>
+        </p>
+        <a href="{% url 'reportes:generar' 'mantenimiento' %}"
+           class="btn btn-outline-danger w-100"
+           onclick="return confirm('¿Generar y enviar alerta de mantenimiento?')">
+          <i class="bi bi-send me-1"></i>Generar y enviar ahora
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-ticket-perforated fs-4 text-primary"></i>
+          <span class="fw-semibold">Resumen de tickets</span>
+        </div>
+        <p class="text-muted small mb-3">
+          Tickets de los últimos 7 días: abiertos, cerrados, urgentes. Se envía a TI.
+          <br><span class="badge bg-secondary">Automático: lunes 8:00 am</span>
+        </p>
+        <a href="{% url 'reportes:generar' 'tickets' %}"
+           class="btn btn-outline-primary w-100"
+           onclick="return confirm('¿Generar y enviar resumen de tickets?')">
+          <i class="bi bi-send me-1"></i>Generar y enviar ahora
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Historial de reportes -->
+<div class="card shadow-sm">
+  <div class="card-header fw-semibold">
+    <i class="bi bi-clock-history me-2"></i>Historial de reportes generados
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Tipo</th><th>Periodo</th><th>Generado</th><th>Por</th><th>Correo</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in reportes %}
+        <tr>
+          <td>
+            <span class="badge"
+              style="background:{% if r.tipo == 'completo' %}var(--kasu-pink){% elif r.tipo == 'mantenimiento' %}#dc3545{% elif r.tipo == 'tickets' %}#0d6efd{% else %}#6c757d{% endif %};">
+              {{ r.get_tipo_display }}
+            </span>
+          </td>
+          <td>
+            {% if r.periodo_inicio %}
+              <small>{{ r.periodo_inicio|date:"d/m/Y" }} — {{ r.periodo_fin|date:"d/m/Y" }}</small>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td><small>{{ r.fecha_generacion|date:"d/m/Y H:i" }}</small></td>
+          <td>
+            <small>{% if r.generado_por %}{{ r.generado_por.get_full_name|default:r.generado_por.username }}{% else %}Automático{% endif %}</small>
+          </td>
+          <td class="text-center">
+            {% if r.enviado_por_correo %}
+              <i class="bi bi-check-circle-fill text-success"></i>
+            {% else %}
+              <i class="bi bi-x-circle text-muted"></i>
+            {% endif %}
+          </td>
+          <td>
+            {% if r.archivo_pdf %}
+            <a href="{% url 'reportes:descargar' r.pk %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-download me-1"></i>PDF
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            No hay reportes generados aún. Usa los botones de arriba para generar el primero.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+      {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a></li>{% endif %}
+      <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</a></li>
+      {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a></li>{% endif %}
+    </ul></nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

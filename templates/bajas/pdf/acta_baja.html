@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { size: letter; margin: 2cm 2.5cm; }
+  body { font-family: Arial, sans-serif; font-size: 10pt; color: #111; }
+  h1 { font-size: 14pt; text-align: center; margin-bottom: 4px; }
+  h2 { font-size: 11pt; margin: 16px 0 6px; border-bottom: 1px solid #555; padding-bottom: 3px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .org-info { font-size: 9pt; color: #444; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 12px; }
+  th, td { border: 1px solid #ccc; padding: 5px 8px; }
+  th { background: #f0f0f0; font-weight: bold; text-align: left; width: 35%; }
+  .badge-fase { display: inline-block; background: #e0007c; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 9pt; }
+  .firma-row { display: flex; justify-content: space-around; margin-top: 32px; }
+  .firma-box { text-align: center; width: 30%; }
+  .firma-line { border-top: 1px solid #333; margin-top: 40px; padding-top: 4px; font-size: 9pt; }
+  .footer { font-size: 8pt; color: #888; text-align: center; margin-top: 24px; border-top: 1px solid #ccc; padding-top: 6px; }
+  .check { color: #28a745; font-weight: bold; }
+  .cross { color: #dc3545; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div style="font-size:14pt;font-weight:bold;color:#e0007c;">TRANSPORTES KASU</div>
+    <div class="org-info">Departamento de Tecnología e Informática</div>
+    <div class="org-info">Protocolo PROT-TI-001 §7.3 — Baja de Activos TI</div>
+  </div>
+  <div style="text-align:right;font-size:9pt;color:#555;">
+    <div><strong>Folio de baja:</strong> BAJA-{{ baja.pk|stringformat:"04d" }}</div>
+    <div><strong>Fecha de impresión:</strong> {{ fecha_impresion|date:"d/m/Y H:i" }}</div>
+  </div>
+</div>
+
+<h1>ACTA DE BAJA DE ACTIVO TECNOLÓGICO</h1>
+
+<h2>1. Datos del Equipo</h2>
+<table>
+  <tr><th>Nombre / Descripción</th><td>{{ baja.equipo }}</td></tr>
+  <tr><th>Tipo</th><td>{{ baja.equipo.get_tipo_display }}</td></tr>
+  <tr><th>Número de serie</th><td>{{ baja.equipo.numero_serie|default:"No registrado" }}</td></tr>
+  <tr><th>Marca / Modelo</th><td>{{ baja.equipo.marca|default:"—" }} {{ baja.equipo.modelo|default:"" }}</td></tr>
+  <tr><th>Usuario / Custodio</th><td>{{ baja.equipo.usuario|default:"—" }}</td></tr>
+  <tr><th>Ubicación</th><td>{{ baja.equipo.ubicacion|default:"—" }}</td></tr>
+  <tr><th>Fecha de registro</th><td>{{ baja.equipo.fecha_registro|date:"d/m/Y" }}</td></tr>
+</table>
+
+<h2>2. Solicitud de Baja</h2>
+<table>
+  <tr><th>Fecha de solicitud</th><td>{{ baja.fecha_solicitud|date:"d/m/Y H:i" }}</td></tr>
+  <tr><th>Solicitante</th>
+    <td>{% if baja.solicitante %}{{ baja.solicitante.get_full_name|default:baja.solicitante.username }}{% else %}—{% endif %}</td>
+  </tr>
+  <tr><th>Motivo</th><td>{{ baja.motivo }}</td></tr>
+  <tr><th>Método de sanitización</th><td>{{ baja.get_metodo_sanitizacion_display }}</td></tr>
+</table>
+
+<h2>3. Ejecución de Sanitización</h2>
+<table>
+  <tr><th>Fecha de ejecución</th><td>{{ baja.fecha_ejecucion|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+  <tr><th>Autorizado por</th>
+    <td>{% if baja.autorizado_por %}{{ baja.autorizado_por.get_full_name|default:baja.autorizado_por.username }}{% else %}—{% endif %}</td>
+  </tr>
+  <tr><th>Herramienta utilizada</th><td>{{ baja.herramienta_utilizada|default:"—" }}</td></tr>
+  <tr><th>Número de pasadas</th><td>{{ baja.numero_pasadas|default:"0" }}</td></tr>
+  <tr><th>Verificación de borrado</th>
+    <td>{% if baja.verificacion_borrado %}<span class="check">&#10003; Realizada</span>{% else %}<span class="cross">&#10007; No realizada</span>{% endif %}</td>
+  </tr>
+</table>
+
+<h2>4. Cierre y Actualización de Inventario</h2>
+<table>
+  <tr><th>Fecha de cierre</th><td>{{ baja.fecha_cierre|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+  <tr><th>Testigos</th>
+    <td>{% for t in baja.testigos.all %}{{ t.get_full_name|default:t.username }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+  </tr>
+  <tr><th>Observaciones</th><td>{{ baja.observaciones|default:"Ninguna" }}</td></tr>
+  <tr><th>Estado final del equipo</th><td><span class="badge-fase">{{ baja.equipo.get_estado_display }}</span></td></tr>
+</table>
+
+<div class="firma-row">
+  <div class="firma-box">
+    <div class="firma-line">
+      <strong>Solicitante</strong><br>
+      {% if baja.solicitante %}{{ baja.solicitante.get_full_name|default:baja.solicitante.username }}{% else %}____________________{% endif %}
+    </div>
+  </div>
+  <div class="firma-box">
+    <div class="firma-line">
+      <strong>Responsable TI</strong><br>
+      {% if baja.autorizado_por %}{{ baja.autorizado_por.get_full_name|default:baja.autorizado_por.username }}{% else %}____________________{% endif %}
+    </div>
+  </div>
+  <div class="firma-box">
+    <div class="firma-line">
+      <strong>Testigo</strong><br>
+      {% with baja.testigos.all|first as testigo %}
+        {% if testigo %}{{ testigo.get_full_name|default:testigo.username }}{% else %}____________________{% endif %}
+      {% endwith %}
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Documento generado automáticamente por el Sistema de Inventario TI — Transportes Kasu &bull; PROT-TI-001 &bull;
+  Fecha: {{ fecha_impresion|date:"d/m/Y H:i" }}
+</div>
+
+</body>
+</html>

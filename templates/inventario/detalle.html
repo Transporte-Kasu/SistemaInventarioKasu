@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}{{ equipo }}{% endblock %}
+{% block nav_inventario %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'inventario:lista' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="mb-0 fw-bold">{{ equipo.marca }} {{ equipo.modelo }}</h4>
+  <span class="ms-2
+    {% if equipo.estado == 'activo' %}badge badge-activo
+    {% elif equipo.estado == 'almacen' %}badge badge-almacen
+    {% elif equipo.estado == 'pendiente_baja' %}badge badge-pendiente
+    {% else %}badge badge-baja{% endif %}">
+    {{ equipo.get_estado_display }}
+  </span>
+  <div class="ms-auto d-flex gap-2">
+    <a href="{% url 'inventario:editar' equipo.pk %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-pencil me-1"></i>Editar
+    </a>
+    <a href="{% url 'inventario:qr_download' equipo.pk %}" class="btn btn-sm btn-kasu">
+      <i class="bi bi-qr-code me-1"></i>Descargar QR
+    </a>
+    {% if equipo.estado != 'dado_de_baja' and not equipo.baja %}
+    <a href="{% url 'bajas:iniciar' equipo.pk %}" class="btn btn-sm btn-outline-danger"
+       onclick="return confirm('¿Iniciar proceso de baja para este equipo?')">
+      <i class="bi bi-trash3 me-1"></i>Iniciar baja
+    </a>
+    {% elif equipo.baja %}
+    <a href="{% url 'bajas:detalle' equipo.baja.pk %}" class="btn btn-sm btn-danger">
+      <i class="bi bi-trash3 me-1"></i>Ver proceso de baja
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- Info principal -->
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold"><i class="bi bi-info-circle me-2"></i>Datos del equipo</div>
+      <div class="card-body">
+        {% if equipo.foto %}
+          <img src="{{ equipo.foto.url }}" class="img-fluid rounded mb-3" alt="Foto equipo">
+        {% endif %}
+        <dl class="row mb-0 small">
+          <dt class="col-5">Custodio</dt><dd class="col-7">{{ equipo.usuario }}</dd>
+          <dt class="col-5">Tipo</dt><dd class="col-7">{{ equipo.get_tipo_display }}</dd>
+          <dt class="col-5">Marca</dt><dd class="col-7">{{ equipo.marca }}</dd>
+          <dt class="col-5">Modelo</dt><dd class="col-7">{{ equipo.modelo }}</dd>
+          <dt class="col-5">No. Serie</dt><dd class="col-7"><code>{{ equipo.numero_serie }}</code></dd>
+          {% if equipo.mac_address %}
+            <dt class="col-5">MAC</dt><dd class="col-7"><code>{{ equipo.mac_address }}</code></dd>
+          {% endif %}
+          {% if equipo.telefono_interno %}
+            <dt class="col-5">Teléfono</dt><dd class="col-7">{{ equipo.telefono_interno }}</dd>
+          {% endif %}
+          {% if equipo.ubicacion %}
+            <dt class="col-5">Área</dt><dd class="col-7">{{ equipo.ubicacion }}</dd>
+          {% endif %}
+          {% if equipo.monitores_cantidad %}
+            <dt class="col-5">Monitores</dt>
+            <dd class="col-7">{{ equipo.monitores_cantidad }} {% if equipo.monitores_marca %}({{ equipo.monitores_marca }}){% endif %}</dd>
+          {% endif %}
+          <dt class="col-5">Registrado</dt><dd class="col-7">{{ equipo.fecha_registro|date:"d/m/Y" }}</dd>
+        </dl>
+      </div>
+      {% if equipo.qr_code %}
+      <div class="card-footer text-center">
+        <img src="{{ equipo.qr_code.url }}" width="130" alt="QR">
+        <div class="small text-muted mt-1">Escanear para soporte / mantenimiento</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Mantenimientos -->
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-tools me-2"></i>Mantenimientos</span>
+        <a href="{% url 'mantenimiento:registrar_qr' equipo.uuid %}" class="btn btn-sm btn-kasu">
+          <i class="bi bi-plus"></i> Registrar
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if mantenimientos %}
+          {% for m in mantenimientos %}
+          <div class="px-3 py-2 border-bottom small
+            {% if m == mantenimientos.0 %}
+              {% if equipo.necesita_mantenimiento %}card-mantenimiento-vencido{% else %}card-mantenimiento-ok{% endif %}
+            {% endif %}">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold">{{ m.get_tipo_display }}</span>
+              <span class="text-muted">{{ m.fecha|date:"d/m/Y" }}</span>
+            </div>
+            <div class="text-muted">
+              Próximo: {{ m.proxima_fecha|date:"d/m/Y" }} &middot;
+              {{ m.get_estado_equipo_display }} &middot;
+              {{ m.tecnico.get_full_name|default:m.tecnico.username }}
+            </div>
+            {% if m.observaciones %}
+              <div class="text-muted fst-italic">{{ m.observaciones|truncatechars:60 }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="p-3 text-center text-muted">
+            <i class="bi bi-exclamation-circle me-1"></i>Sin mantenimientos registrados
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Tickets -->
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold"><i class="bi bi-ticket-perforated me-2"></i>Tickets recientes</div>
+      <div class="card-body p-0">
+        {% if tickets %}
+          {% for t in tickets %}
+          <a href="{% url 'tickets:detalle' t.pk %}" class="text-decoration-none text-dark">
+            <div class="px-3 py-2 border-bottom small hover-bg">
+              <div class="d-flex justify-content-between">
+                <span class="fw-semibold">{{ t.folio }}</span>
+                <span class="badge
+                  {% if t.estado == 'abierto' %}bg-danger
+                  {% elif t.estado == 'en_proceso' %}bg-warning text-dark
+                  {% else %}bg-success{% endif %}">
+                  {{ t.get_estado_display }}
+                </span>
+              </div>
+              <div class="text-muted">{{ t.get_categoria_display }} &middot; {{ t.fecha_apertura|date:"d/m/Y" }}</div>
+              <div>{{ t.descripcion|truncatechars:55 }}</div>
+            </div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="p-3 text-center text-muted">Sin tickets registrados</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

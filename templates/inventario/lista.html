@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Equipos{% endblock %}
+{% block nav_inventario %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-pc-display me-2"></i>Inventario de equipos</h4>
+    <small class="text-muted">{{ total }} equipos registrados · {{ activos }} activos</small>
+  </div>
+  <a href="{% url 'inventario:crear' %}" class="btn btn-kasu">
+    <i class="bi bi-plus-lg me-1"></i>Nuevo equipo
+  </a>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <input type="text" name="q" value="{{ q }}" class="form-control"
+               placeholder="Buscar por custodio, serie o marca...">
+      </div>
+      <div class="col-md-3">
+        <select name="estado" class="form-select">
+          <option value="">— Todos los estados —</option>
+          {% for val, label in estados %}
+            <option value="{{ val }}" {% if val == estado_sel %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="tipo" class="form-select">
+          <option value="">— Todos los tipos —</option>
+          {% for val, label in tipos %}
+            <option value="{{ val }}" {% if val == tipo_sel %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-kasu w-100"><i class="bi bi-search"></i></button>
+        <a href="{% url 'inventario:lista' %}" class="btn btn-outline-secondary w-100"><i class="bi bi-x"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Custodio</th>
+          <th>Tipo</th>
+          <th>Marca / Modelo</th>
+          <th>No. Serie</th>
+          <th>Estado</th>
+          <th>Mant.</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for equipo in equipos %}
+        <tr>
+          <td class="fw-semibold">{{ equipo.usuario }}</td>
+          <td><small class="text-muted">{{ equipo.get_tipo_display }}</small></td>
+          <td>{{ equipo.marca }} {{ equipo.modelo }}</td>
+          <td><code>{{ equipo.numero_serie }}</code></td>
+          <td>
+            {% if equipo.estado == 'activo' %}
+              <span class="badge badge-activo">Activo</span>
+            {% elif equipo.estado == 'almacen' %}
+              <span class="badge badge-almacen">Almacén</span>
+            {% elif equipo.estado == 'pendiente_baja' %}
+              <span class="badge badge-pendiente">Pend. baja</span>
+            {% else %}
+              <span class="badge badge-baja">Dado de baja</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if equipo.necesita_mantenimiento %}
+              <span class="badge bg-danger">Vencido</span>
+            {% elif equipo.proximo_mantenimiento %}
+              <span class="badge bg-warning text-dark">{{ equipo.proximo_mantenimiento }}</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{% url 'inventario:detalle' equipo.pk %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'inventario:editar' equipo.pk %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-pencil"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No se encontraron equipos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav>
+      <ul class="pagination pagination-sm mb-0 justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&estado={{ estado_sel }}&tipo={{ tipo_sel }}">‹</a></li>
+        {% endif %}
+        <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</a></li>
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&estado={{ estado_sel }}&tipo={{ tipo_sel }}">›</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

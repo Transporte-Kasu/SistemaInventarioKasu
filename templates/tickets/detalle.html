@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}{{ ticket.folio }}{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'tickets:lista' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="mb-0 fw-bold">{{ ticket.folio }}</h4>
+  <span class="badge
+    {% if ticket.estado == 'abierto' %}bg-danger
+    {% elif ticket.estado == 'en_proceso' %}bg-warning text-dark
+    {% else %}bg-success{% endif %} ms-1">
+    {{ ticket.get_estado_display }}
+  </span>
+  <span class="badge
+    {% if ticket.prioridad == 'urgente' %}bg-danger
+    {% elif ticket.prioridad == 'alta' %}bg-warning text-dark
+    {% elif ticket.prioridad == 'media' %}bg-info text-dark
+    {% else %}bg-secondary{% endif %}">
+    {{ ticket.get_prioridad_display }}
+  </span>
+</div>
+
+<div class="row g-4">
+
+  <!-- Detalle del ticket -->
+  <div class="col-md-7">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold"><i class="bi bi-file-text me-2"></i>Detalle del reporte</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Equipo</dt>
+          <dd class="col-sm-8">
+            <a href="{% url 'inventario:detalle' ticket.equipo.pk %}">
+              {{ ticket.equipo.marca }} {{ ticket.equipo.modelo }}
+            </a>
+            <small class="text-muted d-block">{{ ticket.equipo.usuario }} &middot; {{ ticket.equipo.numero_serie }}</small>
+          </dd>
+          <dt class="col-sm-4">Solicitante</dt>
+          <dd class="col-sm-8">
+            {{ ticket.nombre_solicitante }}
+            <small class="text-muted d-block">{{ ticket.email_solicitante }}</small>
+          </dd>
+          <dt class="col-sm-4">Categoría</dt>
+          <dd class="col-sm-8">{{ ticket.get_categoria_display }}</dd>
+          <dt class="col-sm-4">Descripción</dt>
+          <dd class="col-sm-8">{{ ticket.descripcion }}</dd>
+          <dt class="col-sm-4">Abierto</dt>
+          <dd class="col-sm-8">{{ ticket.fecha_apertura|date:"d/m/Y H:i" }}</dd>
+          {% if ticket.fecha_cierre %}
+            <dt class="col-sm-4">Cerrado</dt>
+            <dd class="col-sm-8">{{ ticket.fecha_cierre|date:"d/m/Y H:i" }}</dd>
+          {% endif %}
+          {% if ticket.notas_cierre %}
+            <dt class="col-sm-4">Resolución</dt>
+            <dd class="col-sm-8">{{ ticket.notas_cierre }}</dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Acciones -->
+  <div class="col-md-5">
+
+    {% if ticket.estado != 'cerrado' %}
+    <!-- Asignar -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-header fw-semibold"><i class="bi bi-person-check me-2"></i>Asignar técnico</div>
+      <div class="card-body">
+        <form method="post" action="{% url 'tickets:asignar' ticket.pk %}">
+          {% csrf_token %}
+          <div class="d-flex gap-2">
+            <select name="asignado_a" class="form-select">
+              <option value="">— Sin asignar —</option>
+              {% for tecnico in tecnicos %}
+                <option value="{{ tecnico.pk }}"
+                  {% if ticket.asignado_a == tecnico %}selected{% endif %}>
+                  {{ tecnico.get_full_name|default:tecnico.username }}
+                </option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-kasu text-nowrap">
+              <i class="bi bi-check2"></i> Asignar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Cerrar ticket -->
+    <div class="card shadow-sm border-success">
+      <div class="card-header fw-semibold text-success">
+        <i class="bi bi-check-circle me-2"></i>Cerrar ticket
+      </div>
+      <div class="card-body">
+        <form method="post" action="{% url 'tickets:cerrar' ticket.pk %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            {{ form_cierre.notas_cierre }}
+            <small class="text-muted">Se enviará notificación a {{ ticket.email_solicitante }}</small>
+          </div>
+          <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-check-circle me-1"></i>Marcar como resuelto
+          </button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="card shadow-sm border-success">
+      <div class="card-body text-center text-success py-4">
+        <i class="bi bi-check-circle fs-1"></i>
+        <p class="mt-2 mb-0 fw-semibold">Ticket cerrado</p>
+        <small class="text-muted">{{ ticket.fecha_cierre|date:"d/m/Y H:i" }}</small>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

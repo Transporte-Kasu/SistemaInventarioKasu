@@ -1,0 +1,70 @@
+{% extends 'reportes/pdf/base_pdf.html' %}
+{% block titulo_reporte %}Inventario Completo de Activos Tecnológicos{% endblock %}
+
+{% block contenido %}
+<!-- Resumen ejecutivo -->
+<div class="resumen-box">
+  <h3 style="margin-top:0;">Resumen ejecutivo</h3>
+  <div class="resumen-grid">
+    <div class="resumen-item"><div class="resumen-num">{{ stats.total }}</div><div class="resumen-label">Total equipos</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#198754;">{{ stats.activos }}</div><div class="resumen-label">Activos</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#6c757d;">{{ stats.almacen }}</div><div class="resumen-label">En almacén</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#dc3545;">{{ stats.baja }}</div><div class="resumen-label">Baja / Pendiente</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#dc3545;">{{ stats.sin_mantenimiento }}</div><div class="resumen-label">Sin mantenimiento</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#ffc107;">{{ stats.proximos }}</div><div class="resumen-label">Mant. próximo</div></div>
+  </div>
+</div>
+
+<h2>6.1 Registro de activos tecnológicos</h2>
+<p style="font-size:9pt;color:#555;">Conforme al procedimiento PROT-TI-001 §6.1, se listan todos los activos registrados en el sistema.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th><th>Custodio</th><th>Tipo</th><th>Marca / Modelo</th>
+      <th>No. Serie</th><th>Estado</th><th>Próx. Mant.</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in equipos %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td><strong>{{ e.usuario }}</strong></td>
+      <td>{{ e.get_tipo_display }}</td>
+      <td>{{ e.marca }} {{ e.modelo }}</td>
+      <td>{{ e.numero_serie }}</td>
+      <td>
+        {% if e.estado == 'activo' %}<span class="badge badge-activo">Activo</span>
+        {% elif e.estado == 'almacen' %}<span class="badge badge-almacen">Almacén</span>
+        {% elif e.estado == 'pendiente_baja' %}<span class="badge badge-pendiente">Pend. baja</span>
+        {% else %}<span class="badge badge-baja">Dado de baja</span>{% endif %}
+      </td>
+      <td>
+        {% if e.proximo_mantenimiento %}
+          {% if e.necesita_mantenimiento %}<span class="badge badge-vencido">Vencido</span>
+          {% else %}<span class="badge badge-proximo">{{ e.proximo_mantenimiento|date:"d/m/Y" }}</span>{% endif %}
+        {% else %}<span class="badge badge-vencido">Sin registro</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if mantenimientos_recientes %}
+<h2>Mantenimientos recientes (últimos 30 días)</h2>
+<table>
+  <thead><tr><th>Equipo</th><th>Tipo</th><th>Fecha</th><th>Técnico</th><th>Estado equipo</th></tr></thead>
+  <tbody>
+    {% for m in mantenimientos_recientes %}
+    <tr>
+      <td>{{ m.equipo.marca }} {{ m.equipo.modelo }} ({{ m.equipo.usuario }})</td>
+      <td>{{ m.get_tipo_display }}</td>
+      <td>{{ m.fecha|date:"d/m/Y" }}</td>
+      <td>{{ m.tecnico.get_full_name|default:m.tecnico.username }}</td>
+      <td>{{ m.get_estado_equipo_display }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

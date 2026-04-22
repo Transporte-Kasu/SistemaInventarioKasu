@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Fase 3 — Destrucción física{% endblock %}
+{% block nav_bajas %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-hammer me-2"></i>Fase 3 — Destrucción física</h4>
+    <small class="text-muted">PROT-TI-001 §7.3.3 — Baja: <strong>{{ baja.equipo }}</strong></small>
+  </div>
+  <a href="{% url 'bajas:detalle' baja.pk %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Volver
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header fw-semibold bg-warning-subtle">
+        <i class="bi bi-3-circle me-2"></i>Destrucción física (si aplica)
+      </div>
+      <div class="card-body">
+        <div class="alert alert-secondary small">
+          <i class="bi bi-info-circle me-2"></i>
+          Esta fase es <strong>opcional</strong>. Aplica solo cuando el método requiere destrucción física del hardware
+          (Degaussing con destrucción, Destrucción física directa). Si el método seleccionado fue
+          <em>Formateo lógico</em> o <em>Factory Reset</em>, puede omitirse.
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" name="aplica_destruccion" value="1" id="id_aplica">
+              <label class="form-check-label fw-semibold" for="id_aplica">
+                Aplica destrucción física — registrar evidencia
+              </label>
+            </div>
+          </div>
+          <div id="seccion_destruccion" style="display:none">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Evidencia fotográfica de destrucción</label>
+              {{ form.evidencia_foto }}
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Observaciones</label>
+              {{ form.observaciones }}
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-warning text-dark">
+              <i class="bi bi-check-lg me-1"></i>Completar Fase 3
+            </button>
+            <a href="{% url 'bajas:detalle' baja.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('id_aplica').addEventListener('change', function() {
+  document.getElementById('seccion_destruccion').style.display = this.checked ? 'block' : 'none';
+});
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Bajas de equipos{% endblock %}
+{% block nav_bajas %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-trash3 me-2"></i>Bajas de equipos</h4>
+    <small class="text-muted">PROT-TI-001 §7.3 — Flujo completo de 4 fases</small>
+  </div>
+  <a href="{% url 'inventario:lista' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-pc-display me-1"></i>Ir a Equipos
+  </a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Equipo</th>
+          <th>Motivo</th>
+          <th>Solicitante</th>
+          <th>Fecha solicitud</th>
+          <th>Fase</th>
+          <th>Método</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bajas %}
+        <tr>
+          <td>
+            <a href="{% url 'bajas:detalle' b.pk %}" class="fw-semibold text-decoration-none">
+              {{ b.equipo }}
+            </a>
+          </td>
+          <td><small class="text-muted">{{ b.motivo|truncatechars:50 }}</small></td>
+          <td><small>{{ b.solicitante.get_full_name|default:b.solicitante.username|default:"—" }}</small></td>
+          <td><small>{{ b.fecha_solicitud|date:"d/m/Y" }}</small></td>
+          <td>
+            {% if b.fase_actual == 4 %}
+              <span class="badge bg-success">{{ b.get_fase_actual_display }}</span>
+            {% elif b.fase_actual == 3 %}
+              <span class="badge bg-warning text-dark">{{ b.get_fase_actual_display }}</span>
+            {% elif b.fase_actual == 2 %}
+              <span class="badge bg-info text-dark">{{ b.get_fase_actual_display }}</span>
+            {% else %}
+              <span class="badge bg-secondary">{{ b.get_fase_actual_display }}</span>
+            {% endif %}
+          </td>
+          <td><small>{{ b.get_metodo_sanitizacion_display }}</small></td>
+          <td>
+            <a href="{% url 'bajas:detalle' b.pk %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            No hay procesos de baja registrados. Para iniciar uno, ve al detalle de un equipo.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+      {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a></li>{% endif %}
+      <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</a></li>
+      {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a></li>{% endif %}
+    </ul></nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

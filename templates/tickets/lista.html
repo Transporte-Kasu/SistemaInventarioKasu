@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Tickets{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-ticket-perforated me-2"></i>Tickets de soporte</h4>
+    <small class="text-muted">
+      <span class="text-danger fw-semibold">{{ total_abiertos }}</span> abiertos &middot;
+      <span class="text-warning fw-semibold">{{ total_en_proceso }}</span> en proceso
+    </small>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <select name="estado" class="form-select">
+          <option value="">— Todos los estados —</option>
+          {% for val, label in estados %}
+            <option value="{{ val }}" {% if val == estado_sel %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <select name="prioridad" class="form-select">
+          <option value="">— Todas las prioridades —</option>
+          {% for val, label in prioridades %}
+            <option value="{{ val }}" {% if val == prioridad_sel %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-kasu w-100"><i class="bi bi-funnel"></i> Filtrar</button>
+        <a href="{% url 'tickets:lista' %}" class="btn btn-outline-secondary w-100"><i class="bi bi-x"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Folio</th>
+          <th>Equipo</th>
+          <th>Categoría</th>
+          <th>Solicitante</th>
+          <th>Prioridad</th>
+          <th>Estado</th>
+          <th>Asignado a</th>
+          <th>Fecha</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td><code>{{ t.folio }}</code></td>
+          <td>
+            <div class="fw-semibold">{{ t.equipo.usuario }}</div>
+            <small class="text-muted">{{ t.equipo.marca }} {{ t.equipo.modelo }}</small>
+          </td>
+          <td>{{ t.get_categoria_display }}</td>
+          <td>
+            <div>{{ t.nombre_solicitante }}</div>
+            <small class="text-muted">{{ t.email_solicitante }}</small>
+          </td>
+          <td>
+            <span class="badge
+              {% if t.prioridad == 'urgente' %}bg-danger
+              {% elif t.prioridad == 'alta' %}bg-warning text-dark
+              {% elif t.prioridad == 'media' %}bg-info text-dark
+              {% else %}bg-secondary{% endif %}">
+              {{ t.get_prioridad_display }}
+            </span>
+          </td>
+          <td>
+            <span class="badge
+              {% if t.estado == 'abierto' %}bg-danger
+              {% elif t.estado == 'en_proceso' %}bg-warning text-dark
+              {% else %}bg-success{% endif %}">
+              {{ t.get_estado_display }}
+            </span>
+          </td>
+          <td>{% if t.asignado_a %}{{ t.asignado_a.get_full_name|default:t.asignado_a.username }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+          <td><small>{{ t.fecha_apertura|date:"d/m/Y H:i" }}</small></td>
+          <td>
+            <a href="{% url 'tickets:detalle' t.pk %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="text-center text-muted py-4">No hay tickets que mostrar.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&estado={{ estado_sel }}&prioridad={{ prioridad_sel }}">‹</a></li>
+      {% endif %}
+      <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</a></li>
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&estado={{ estado_sel }}&prioridad={{ prioridad_sel }}">›</a></li>
+      {% endif %}
+    </ul></nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

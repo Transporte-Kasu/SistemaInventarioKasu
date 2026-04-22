@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Alertas de mantenimiento{% endblock %}
+{% block nav_mantenimiento %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Alertas de mantenimiento</h4>
+    <small class="text-muted">Equipos que requieren atención — {{ hoy|date:"d/m/Y" }}</small>
+  </div>
+  <a href="{% url 'mantenimiento:lista' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-list-ul me-1"></i>Ver historial
+  </a>
+</div>
+
+<!-- Vencidos -->
+{% if vencidos %}
+<div class="card shadow-sm mb-4 border-danger">
+  <div class="card-header bg-danger text-white fw-semibold">
+    <i class="bi bi-exclamation-circle me-2"></i>Mantenimiento vencido — {{ vencidos|length }} equipo{{ vencidos|length|pluralize }}
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Custodio</th><th>Equipo</th><th>No. Serie</th><th>Vencido desde</th><th>Días vencido</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for e in vencidos %}
+        <tr class="table-alerta-vencido">
+          <td class="fw-semibold">{{ e.usuario }}</td>
+          <td>{{ e.marca }} {{ e.modelo }}</td>
+          <td><code>{{ e.numero_serie }}</code></td>
+          <td>{{ e.proximo_mantenimiento|date:"d/m/Y" }}</td>
+          <td>
+            <span class="badge bg-danger">
+              {{ hoy|timeuntil:e.proximo_mantenimiento }} vencido
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'mantenimiento:registrar_qr' e.uuid %}" class="btn btn-sm btn-kasu">
+              <i class="bi bi-plus me-1"></i>Registrar
+            </a>
+            <a href="{% url 'inventario:detalle' e.pk %}" class="btn btn-sm btn-outline-secondary ms-1">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Sin mantenimiento -->
+{% if sin_mantenimiento %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">
+    <i class="bi bi-question-circle me-2 text-secondary"></i>Sin mantenimiento registrado — {{ sin_mantenimiento|length }} equipo{{ sin_mantenimiento|length|pluralize }}
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Custodio</th><th>Equipo</th><th>No. Serie</th><th>Tipo</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for e in sin_mantenimiento %}
+        <tr class="table-alerta-sin">
+          <td class="fw-semibold">{{ e.usuario }}</td>
+          <td>{{ e.marca }} {{ e.modelo }}</td>
+          <td><code>{{ e.numero_serie }}</code></td>
+          <td><small class="text-muted">{{ e.get_tipo_display }}</small></td>
+          <td>
+            <a href="{% url 'mantenimiento:registrar_qr' e.uuid %}" class="btn btn-sm btn-kasu">
+              <i class="bi bi-plus me-1"></i>Registrar
+            </a>
+            <a href="{% url 'inventario:detalle' e.pk %}" class="btn btn-sm btn-outline-secondary ms-1">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Próximos -->
+{% if proximos %}
+<div class="card shadow-sm border-warning">
+  <div class="card-header fw-semibold" style="background:#fff8e1;">
+    <i class="bi bi-clock me-2 text-warning"></i>Próximos (≤ 15 días) — {{ proximos|length }} equipo{{ proximos|length|pluralize }}
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Custodio</th><th>Equipo</th><th>No. Serie</th><th>Fecha límite</th><th>Días restantes</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for e in proximos %}
+        <tr class="table-alerta-proximo">
+          <td class="fw-semibold">{{ e.usuario }}</td>
+          <td>{{ e.marca }} {{ e.modelo }}</td>
+          <td><code>{{ e.numero_serie }}</code></td>
+          <td>{{ e.proximo_mantenimiento|date:"d/m/Y" }}</td>
+          <td>
+            <span class="badge bg-warning text-dark">
+              {{ e.proximo_mantenimiento|timeuntil:hoy }}
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'mantenimiento:registrar_qr' e.uuid %}" class="btn btn-sm btn-outline-warning">
+              <i class="bi bi-plus me-1"></i>Adelantar
+            </a>
+            <a href="{% url 'inventario:detalle' e.pk %}" class="btn btn-sm btn-outline-secondary ms-1">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if not vencidos and not sin_mantenimiento and not proximos %}
+<div class="card shadow-sm">
+  <div class="card-body text-center text-success py-5">
+    <i class="bi bi-check-circle fs-1 mb-3 d-block"></i>
+    <h5>¡Todo al día!</h5>
+    <p class="text-muted mb-0">No hay equipos con alertas de mantenimiento pendientes.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

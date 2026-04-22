@@ -1,0 +1,39 @@
+{% extends 'reportes/pdf/base_pdf.html' %}
+{% block titulo_reporte %}Resumen Semanal de Tickets{% endblock %}
+
+{% block contenido %}
+<div class="resumen-box">
+  <div class="resumen-grid">
+    <div class="resumen-item"><div class="resumen-num">{{ stats.total }}</div><div class="resumen-label">Total periodo</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#dc3545;">{{ stats.abiertos }}</div><div class="resumen-label">Abiertos</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#ffc107;">{{ stats.en_proceso }}</div><div class="resumen-label">En proceso</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#198754;">{{ stats.cerrados }}</div><div class="resumen-label">Cerrados</div></div>
+    <div class="resumen-item"><div class="resumen-num" style="color:#dc3545;">{{ stats.urgentes }}</div><div class="resumen-label">Urgentes</div></div>
+  </div>
+</div>
+
+<h2>Detalle de tickets del periodo</h2>
+<table>
+  <thead>
+    <tr><th>Folio</th><th>Equipo / Custodio</th><th>Categoría</th><th>Prioridad</th><th>Estado</th><th>Apertura</th></tr>
+  </thead>
+  <tbody>
+    {% for t in tickets %}
+    <tr>
+      <td>{{ t.folio }}</td>
+      <td>{{ t.equipo.usuario }}<br><small>{{ t.equipo.marca }} {{ t.equipo.modelo }}</small></td>
+      <td>{{ t.get_categoria_display }}</td>
+      <td>{{ t.get_prioridad_display }}</td>
+      <td>
+        {% if t.estado == 'abierto' %}<span class="badge badge-abierto">Abierto</span>
+        {% elif t.estado == 'en_proceso' %}<span class="badge badge-proceso">En proceso</span>
+        {% else %}<span class="badge badge-cerrado">Cerrado</span>{% endif %}
+      </td>
+      <td>{{ t.fecha_apertura|date:"d/m/Y" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" style="text-align:center;color:#888;">Sin tickets en el periodo.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

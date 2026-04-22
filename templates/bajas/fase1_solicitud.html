@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Iniciar baja — {{ equipo }}{% endblock %}
+{% block nav_bajas %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-trash3 me-2"></i>Fase 1 — Solicitud de baja</h4>
+    <small class="text-muted">PROT-TI-001 §7.3.1 — Equipo: <strong>{{ equipo }}</strong></small>
+  </div>
+  <a href="{% url 'inventario:detalle' equipo.pk %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Cancelar
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header fw-semibold bg-secondary-subtle">
+        <i class="bi bi-1-circle me-2"></i>Solicitud de baja
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning small">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Al confirmar, el equipo pasará al estado <strong>Pendiente de baja</strong> y se iniciará el protocolo PROT-TI-001 §7.3.
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Motivo de baja <span class="text-danger">*</span></label>
+            {{ form.motivo }}
+            {% if form.motivo.errors %}<div class="text-danger small">{{ form.motivo.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Método de sanitización <span class="text-danger">*</span></label>
+            {{ form.metodo_sanitizacion }}
+            {% if form.metodo_sanitizacion.errors %}<div class="text-danger small">{{ form.metodo_sanitizacion.errors }}</div>{% endif %}
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Para discos duros con datos sensibles se recomienda Degaussing o Destrucción física.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Observaciones</label>
+            {{ form.observaciones }}
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('¿Confirmar inicio del proceso de baja para {{ equipo }}?')">
+              <i class="bi bi-trash3 me-1"></i>Iniciar proceso de baja
+            </button>
+            <a href="{% url 'inventario:detalle' equipo.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

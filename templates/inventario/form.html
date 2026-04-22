@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block nav_inventario %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'inventario:lista' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="mb-0 fw-bold">{{ titulo }}</h4>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row g-3">
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Responsable / Custodio <span class="text-danger">*</span></label>
+          {{ form.usuario }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
+          {{ form.tipo }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Estado <span class="text-danger">*</span></label>
+          {{ form.estado }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Marca <span class="text-danger">*</span></label>
+          {{ form.marca }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Modelo <span class="text-danger">*</span></label>
+          {{ form.modelo }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Número de serie <span class="text-danger">*</span></label>
+          {{ form.numero_serie }}
+          {% if form.numero_serie.errors %}
+            <div class="text-danger small mt-1">{{ form.numero_serie.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">MAC Address</label>
+          {{ form.mac_address }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Teléfono interno</label>
+          {{ form.telefono_interno }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Ubicación / Área</label>
+          {{ form.ubicacion }}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Monitores (cantidad)</label>
+          {{ form.monitores_cantidad }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Marca del monitor</label>
+          {{ form.monitores_marca }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Fecha de adquisición</label>
+          {{ form.fecha_adquisicion }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Foto del equipo</label>
+          {{ form.foto }}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label fw-semibold">Notas</label>
+          {{ form.notas }}
+        </div>
+
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+        <a href="{% url 'inventario:lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-kasu">
+          <i class="bi bi-floppy me-1"></i>Guardar equipo
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
