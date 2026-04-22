@@ -1,0 +1,103 @@
+:root {
+  --kasu-pink: #e0007c;
+  --kasu-pink-dark: #b3005f;
+  --kasu-pink-light: #f9d0e8;
+}
+
+.kasu-navbar {
+  background-color: var(--kasu-pink);
+}
+
+.kasu-navbar .nav-link:hover,
+.kasu-navbar .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+}
+
+.btn-kasu {
+  background-color: var(--kasu-pink);
+  border-color: var(--kasu-pink);
+  color: #fff;
+}
+
+.btn-kasu:hover {
+  background-color: var(--kasu-pink-dark);
+  border-color: var(--kasu-pink-dark);
+  color: #fff;
+}
+
+.badge-activo      { background-color: #198754; }
+.badge-almacen     { background-color: #6c757d; }
+.badge-pendiente   { background-color: #ffc107; color: #000; }
+.badge-baja        { background-color: #dc3545; }
+
+.card-mantenimiento-ok      { border-left: 4px solid #198754; }
+.card-mantenimiento-proximo { border-left: 4px solid #ffc107; }
+.card-mantenimiento-vencido { border-left: 4px solid #dc3545; }
+
+/* Dashboard stat cards */
+.stat-card {
+  border-radius: 12px;
+  border: none;
+  transition: transform .15s;
+}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card .stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+}
+.stat-pink   { background: var(--kasu-pink);  color: #fff; }
+.stat-green  { background: #198754; color: #fff; }
+.stat-red    { background: #dc3545; color: #fff; }
+.stat-amber  { background: #ffc107; color: #000; }
+.stat-blue   { background: #0d6efd; color: #fff; }
+
+/* Tabla de alertas */
+.table-alerta-vencido  { background: #fff5f5; }
+.table-alerta-proximo  { background: #fffbea; }
+.table-alerta-sin      { background: #f8f9fa; }
+
+/* Formulario público de ticket (mobile-first) */
+.ticket-publico-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--kasu-pink-light) 0%, #fff 60%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.ticket-publico-card {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(224, 0, 124, 0.12);
+}
+
+.ticket-publico-card .form-control,
+.ticket-publico-card .form-select {
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+}
+
+.ticket-publico-card .btn-submit {
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  background-color: var(--kasu-pink);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.ticket-publico-card .equipo-badge {
+  background-color: var(--kasu-pink-light);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+}
