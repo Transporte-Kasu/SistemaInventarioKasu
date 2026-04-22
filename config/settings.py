@@ -70,7 +70,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Usa DBURL para evitar conflictos con variables de entorno del sistema (USERNAME, HOST)
 DATABASES = {
     'default': dj_database_url.parse(
-        config('DBURL'),
+        config('DBURL', default='sqlite:////tmp/build-placeholder.db'),
         conn_max_age=600,
         ssl_require=config('SSLMODE', default='require') == 'require',
     )
